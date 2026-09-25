@@ -1,0 +1,73 @@
+# Environment variables & secrets (CRITICAL: Keep API keys and credentials private)
+.env
+.env.*
+!.env.example
+*.env
+backend/.env
+frontend/.env
+
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+.venv/
+env/
+ENV/
+
+# Database files
+*.db
+*.sqlite
+*.sqlite3
+backend/app/db/recruiter_copilot.db
+
+# Runtime uploads & generated evaluations
+backend/app/storage/evaluations/*
+!backend/app/storage/evaluations/.gitkeep
+backend/app/storage/uploads/*
+!backend/app/storage/uploads/.gitkeep
+
+# Node & Frontend dependencies & build output
+node_modules/
+frontend/node_modules/
+dist/
+frontend/dist/
+dist-ssr/
+*.local
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Testing & Coverage
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Editor & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+Desktop.ini

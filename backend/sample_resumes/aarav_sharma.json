@@ -1,0 +1,81 @@
+{
+  "candidate": {
+    "name": "Aarav Sharma",
+    "email": "aarav.sharma@techcorp.io",
+    "phone": "+91 98765 43210",
+    "location": "Bengaluru, India"
+  },
+  "education": [
+    {
+      "institution": "National Institute of Technology Karnataka, Surathkal",
+      "degree": "Bachelor of Technology",
+      "field": "Computer Science and Engineering",
+      "year": "2019"
+    }
+  ],
+  "experience": [
+    {
+      "company": "Infosys",
+      "title": "Systems Engineer",
+      "start_date": "2019-07",
+      "end_date": "2021-06",
+      "responsibilities": [
+        "Built resilient REST APIs in Python using Flask and SQLAlchemy.",
+        "Managed database schema migrations and tuned SQL queries for customer analytics dashboard."
+      ]
+    },
+    {
+      "company": "Swiggy",
+      "title": "Software Development Engineer II",
+      "start_date": "2021-08",
+      "end_date": "2023-02",
+      "responsibilities": [
+        "Architected order dispatcher microservice handling 45,000 requests/sec with FastAPI and Redis.",
+        "Cut P99 delivery dispatch latency from 420ms to 180ms through caching and async processing.",
+        "Mentored junior engineers and conducted hiring interviews for backend engineering."
+      ]
+    },
+    {
+      "company": "Razorpay",
+      "title": "Senior Backend Engineer",
+      "start_date": "2025-01",
+      "end_date": "present",
+      "responsibilities": [
+        "Designing merchant automated reconciliation platform handling $2B+ annualized GMV.",
+        "Streamlined payment webhook retry queues with Kafka and Golang services."
+      ]
+    }
+  ],
+  "skills": {
+    "programming": ["Python", "Go", "SQL", "TypeScript"],
+    "frameworks": ["FastAPI", "Flask", "React", "Node.js"],
+    "cloud": ["AWS", "Docker", "Kubernetes", "Terraform"],
+    "databases": ["PostgreSQL", "Redis", "MySQL"],
+    "tools": ["Git", "Kafka", "Prometheus", "Grafana"]
+  },
+  "projects": [
+    {
+      "name": "Distributed Token Bucket Rate Limiter",
+      "description": "High-throughput distributed sliding window rate limiter written in Go and Redis with benchmarked 80k RPS throughput.",
+      "evidence": "Open source GitHub project with 400+ stars."
+    },
+    {
+      "name": "Cloud Ledger Sync",
+      "description": "Idempotent payment ledger synchronization utility with automatic reconciliation and conflict detection.",
+      "evidence": "Deployed internally across merchant billing services."
+    }
+  ],
+  "certifications": [
+    "AWS Certified Solutions Architect – Associate",
+    "Certified Kubernetes Application Developer (CKAD)"
+  ],
+  "employment_gaps": [
+    {
+      "period": "2023-03 to 2025-01",
+      "status": "unexplained",
+      "reason": null
+    }
+  ],
+  "years_of_experience": 4.9,
+  "raw_text": "Aarav Sharma\nBengaluru, India | aarav.sharma@techcorp.io | +91 98765 43210\n\nPROFESSIONAL SUMMARY\nResults-driven Senior Backend Engineer with verified experience building distributed, high-scale microservices using Python, FastAPI, Go, and PostgreSQL.\n\nEDUCATION\nNational Institute of Technology Karnataka, Surathkal — B.Tech in Computer Science and Engineering (2019)\n\nWORK EXPERIENCE\n\nRazorpay — Senior Backend Engineer\n2025-01 – Present | Bengaluru\n- Designing merchant automated reconciliation platform handling $2B+ annualized GMV.\n- Streamlined payment webhook retry queues with Kafka and Golang services.\n\n[Note: Noticeable career interval between February 2023 and January 2025. No reason stated in document.]\n\nSwiggy — Software Development Engineer II\n2021-08 – 2023-02 | Bengaluru\n- Architected order dispatcher microservice handling 45,000 requests/sec with FastAPI and Redis.\n- Cut P99 delivery dispatch latency from 420ms to 180ms through caching and async processing.\n- Mentored junior engineers and conducted hiring interviews.\n\nInfosys — Systems Engineer\n2019-07 – 2021-06 | Bengaluru\n- Built resilient REST APIs in Python using Flask and SQLAlchemy.\n- Managed database schema migrations and tuned SQL queries for customer analytics dashboard.\n\nTECHNICAL SKILLS\nProgramming: Python, Go, SQL, TypeScript\nFrameworks: FastAPI, Flask, React, Node.js\nCloud & DevOps: AWS, Docker, Kubernetes, Terraform\nDatabases: PostgreSQL, Redis, MySQL\nTools & Streaming: Git, Kafka, Prometheus, Grafana\n\nPROJECTS\n1. Distributed Token Bucket Rate Limiter: High-throughput distributed sliding window rate limiter written in Go and Redis with benchmarked 80k RPS throughput.\n2. Cloud Ledger Sync: Idempotent payment ledger synchronization utility with automatic reconciliation.\n\nCERTIFICATIONS\n- AWS Certified Solutions Architect – Associate\n- Certified Kubernetes Application Developer (CKAD)"
+}

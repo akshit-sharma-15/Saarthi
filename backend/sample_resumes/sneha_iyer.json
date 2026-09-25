@@ -1,0 +1,63 @@
+{
+  "candidate": {
+    "name": "Sneha Iyer",
+    "email": "sneha.iyer@protonmail.com",
+    "phone": "+91 76543 21098",
+    "location": "Chennai, India"
+  },
+  "education": [
+    {
+      "institution": "Anna University",
+      "degree": "Bachelor of Technology",
+      "field": "Computer Science and Engineering",
+      "year": "2021"
+    }
+  ],
+  "experience": [
+    {
+      "company": "Freshworks",
+      "title": "Frontend Engineer",
+      "start_date": "2023-08",
+      "end_date": "present",
+      "responsibilities": [
+        "Building next-gen CRM dashboard using React, TypeScript, and Zustand.",
+        "Reduced initial page load time by 40% through code splitting and lazy loading.",
+        "Implemented real-time notification system using WebSockets."
+      ]
+    },
+    {
+      "company": "Zoho",
+      "title": "Junior Software Engineer",
+      "start_date": "2021-06",
+      "end_date": "2022-12",
+      "responsibilities": [
+        "Developed reusable UI component library used across 5 Zoho products.",
+        "Built end-to-end form builder with drag-and-drop and conditional logic.",
+        "Wrote unit and integration tests achieving 85% code coverage."
+      ]
+    }
+  ],
+  "skills": {
+    "programming": ["JavaScript", "TypeScript", "HTML", "CSS"],
+    "frameworks": ["React", "Next.js", "Vue.js", "Tailwind CSS"],
+    "tools": ["Webpack", "Vite", "Jest", "Playwright"],
+    "design": ["Figma", "Storybook", "Design Systems"]
+  },
+  "projects": [
+    {
+      "name": "Accessible Component Library",
+      "description": "Open-source React component library following WCAG 2.1 AA guidelines with 50+ components.",
+      "evidence": "Published on npm with 800+ weekly downloads."
+    }
+  ],
+  "certifications": [],
+  "employment_gaps": [
+    {
+      "period": "2023-01 to 2023-07",
+      "status": "unexplained",
+      "reason": null
+    }
+  ],
+  "years_of_experience": 3.1,
+  "raw_text": "Sneha Iyer\nChennai, India | sneha.iyer@protonmail.com | +91 76543 21098\n\nPROFESSIONAL SUMMARY\nFrontend Engineer with 3+ years of experience specializing in React, TypeScript, and modern web application development. Passionate about design systems and web accessibility.\n\nEDUCATION\nAnna University — B.Tech in Computer Science and Engineering (2021)\n\nWORK EXPERIENCE\n\nFreshworks — Frontend Engineer\n2023-08 – Present | Chennai\n- Building next-gen CRM dashboard using React, TypeScript, and Zustand.\n- Reduced initial page load time by 40% through code splitting and lazy loading.\n- Implemented real-time notification system using WebSockets.\n\n[Note: Gap between January 2023 and August 2023. No explanation provided.]\n\nZoho — Junior Software Engineer\n2021-06 – 2022-12 | Chennai\n- Developed reusable UI component library used across 5 Zoho products.\n- Built end-to-end form builder with drag-and-drop and conditional logic.\n- Wrote unit and integration tests achieving 85% code coverage.\n\nTECHNICAL SKILLS\nProgramming: JavaScript, TypeScript, HTML, CSS\nFrameworks: React, Next.js, Vue.js, Tailwind CSS\nTools: Webpack, Vite, Jest, Playwright\nDesign: Figma, Storybook, Design Systems"
+}

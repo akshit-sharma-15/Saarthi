@@ -1,0 +1,75 @@
+{
+  "candidate": {
+    "name": "Rohit Verma",
+    "email": "rohit.verma@gmail.com",
+    "phone": "+91 99887 66554",
+    "location": "Hyderabad, India"
+  },
+  "education": [
+    {
+      "institution": "BITS Pilani",
+      "degree": "Bachelor of Engineering",
+      "field": "Electronics and Communication",
+      "year": "2017"
+    }
+  ],
+  "experience": [
+    {
+      "company": "Google",
+      "title": "Staff Software Engineer",
+      "start_date": "2024-03",
+      "end_date": "present",
+      "responsibilities": [
+        "Tech lead for Cloud Spanner query optimization team improving P99 latency by 35%.",
+        "Designed distributed consensus protocol extension for multi-region deployments."
+      ]
+    },
+    {
+      "company": "Microsoft",
+      "title": "Senior Software Engineer",
+      "start_date": "2021-01",
+      "end_date": "2023-06",
+      "responsibilities": [
+        "Core contributor to Azure Cosmos DB partitioning engine.",
+        "Built automated performance regression testing framework reducing release cycle by 2 weeks.",
+        "Filed 3 patents related to distributed database indexing."
+      ]
+    },
+    {
+      "company": "Amazon",
+      "title": "Software Development Engineer",
+      "start_date": "2017-07",
+      "end_date": "2020-12",
+      "responsibilities": [
+        "Developed DynamoDB auto-scaling algorithms handling 10M+ read capacity units.",
+        "Implemented consistent hashing for S3 internal traffic routing.",
+        "Led on-call rotation for Tier-1 distributed storage service."
+      ]
+    }
+  ],
+  "skills": {
+    "programming": ["C++", "Java", "Go", "Python"],
+    "systems": ["Distributed Systems", "Database Internals", "Consensus Protocols"],
+    "cloud": ["AWS", "Azure", "GCP"],
+    "tools": ["gRPC", "Protobuf", "Bazel", "Terraform"]
+  },
+  "projects": [
+    {
+      "name": "Raft Consensus Implementation",
+      "description": "Production-grade Raft consensus library in Go with leader election, log replication, and snapshotting.",
+      "evidence": "Open source with 1.2k GitHub stars."
+    }
+  ],
+  "certifications": [
+    "Google Cloud Professional Cloud Architect"
+  ],
+  "employment_gaps": [
+    {
+      "period": "2023-07 to 2024-02",
+      "status": "explained",
+      "reason": "Sabbatical for personal travel and open source contributions"
+    }
+  ],
+  "years_of_experience": 7.5,
+  "raw_text": "Rohit Verma\nHyderabad, India | rohit.verma@gmail.com | +91 99887 66554\n\nPROFESSIONAL SUMMARY\nStaff Software Engineer with 7+ years of experience in distributed systems, database internals, and cloud infrastructure at Google, Microsoft, and Amazon.\n\nEDUCATION\nBITS Pilani — B.E. in Electronics and Communication (2017)\n\nWORK EXPERIENCE\n\nGoogle — Staff Software Engineer\n2024-03 – Present | Hyderabad\n- Tech lead for Cloud Spanner query optimization team improving P99 latency by 35%.\n- Designed distributed consensus protocol extension for multi-region deployments.\n\nCareer Break — Sabbatical\n2023-07 – 2024-02\n- Personal travel across Southeast Asia and Europe.\n- Contributed to open-source Raft consensus library.\n\nMicrosoft — Senior Software Engineer\n2021-01 – 2023-06 | Hyderabad\n- Core contributor to Azure Cosmos DB partitioning engine.\n- Built automated performance regression testing framework reducing release cycle by 2 weeks.\n- Filed 3 patents related to distributed database indexing.\n\nAmazon — Software Development Engineer\n2017-07 – 2020-12 | Hyderabad\n- Developed DynamoDB auto-scaling algorithms handling 10M+ read capacity units.\n- Implemented consistent hashing for S3 internal traffic routing.\n- Led on-call rotation for Tier-1 distributed storage service.\n\nTECHNICAL SKILLS\nProgramming: C++, Java, Go, Python\nSystems: Distributed Systems, Database Internals, Consensus Protocols\nCloud: AWS, Azure, GCP\nTools: gRPC, Protobuf, Bazel, Terraform\n\nCERTIFICATIONS\n- Google Cloud Professional Cloud Architect"
+}
