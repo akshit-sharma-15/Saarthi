@@ -26,23 +26,36 @@ def create_resilient_engine(url: str):
             url,
             connect_args={"check_same_thread": False}
         )
-    try:
-        eng = create_engine(
-            url,
-            pool_pre_ping=True,
-            pool_recycle=300
-        )
-        # Verify driver is present
-        with eng.connect() as conn:
-            pass
-        return eng
-    except Exception as e:
-        print(f"Warning: Primary database connection to '{url}' failed: {e}. Falling back to SQLite.")
-        sqlite_url = f"sqlite:///{DB_PATH}"
-        return create_engine(
-            sqlite_url,
-            connect_args={"check_same_thread": False}
-        )
+
+    candidates = [url]
+    if url.startswith("postgresql://") and "+" not in url.split("://")[0]:
+        candidates = [
+            url.replace("postgresql://", "postgresql+psycopg://", 1),
+            url.replace("postgresql://", "postgresql+psycopg2://", 1),
+            url
+        ]
+
+    last_error = None
+    for candidate_url in candidates:
+        try:
+            eng = create_engine(
+                candidate_url,
+                pool_pre_ping=True,
+                pool_recycle=300
+            )
+            with eng.connect() as conn:
+                pass
+            return eng
+        except Exception as e:
+            last_error = e
+            continue
+
+    print(f"Warning: Primary database connection to '{url}' failed: {last_error}. Falling back to SQLite.")
+    sqlite_url = f"sqlite:///{DB_PATH}"
+    return create_engine(
+        sqlite_url,
+        connect_args={"check_same_thread": False}
+    )
 
 engine = create_resilient_engine(DATABASE_URL)
 
