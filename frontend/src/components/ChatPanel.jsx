@@ -9,6 +9,14 @@ const PRESET_QUESTIONS = [
   "What were their key accomplishments at Swiggy?"
 ];
 
+const getIstTimeString = () =>
+  new Date().toLocaleTimeString('en-IN', {
+    timeZone: 'Asia/Kolkata',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true
+  });
+
 export default function ChatPanel({ resumeId, candidateName }) {
   const [messages, setMessages] = useState([
     {
@@ -16,7 +24,7 @@ export default function ChatPanel({ resumeId, candidateName }) {
       content: `Hello! I am your AI Recruiter Copilot. Ask any question about ${candidateName || 'the candidate'}. Every answer is evidence-grounded and cited against verified resume records. If a fact or reason is not explicitly documented, I will refuse to infer or hallucinate it.`,
       evidence: null,
       grounded: true,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: getIstTimeString()
     }
   ]);
   const [inputQuestion, setInputQuestion] = useState('');
@@ -38,7 +46,7 @@ export default function ChatPanel({ resumeId, candidateName }) {
     const userMsg = {
       role: 'user',
       content: question,
-      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: getIstTimeString()
     };
 
     setMessages((prev) => [...prev, userMsg]);
@@ -52,7 +60,7 @@ export default function ChatPanel({ resumeId, candidateName }) {
         content: response.answer,
         evidence: response.evidence,
         grounded: response.grounded,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        timestamp: getIstTimeString()
       };
       setMessages((prev) => [...prev, aiMsg]);
     } catch (err) {
@@ -64,7 +72,7 @@ export default function ChatPanel({ resumeId, candidateName }) {
           content: 'Sorry, I encountered an error communicating with the Q&A service.',
           evidence: null,
           grounded: false,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          timestamp: getIstTimeString()
         }
       ]);
     } finally {

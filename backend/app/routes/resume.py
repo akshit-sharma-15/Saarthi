@@ -2,6 +2,7 @@ import os
 import uuid
 import json
 import shutil
+from datetime import datetime
 from typing import Optional
 from fastapi import APIRouter, UploadFile, File, HTTPException, Depends
 from sqlalchemy.orm import Session
@@ -144,14 +145,21 @@ async def list_candidates(db: Session = Depends(get_db)):
             email = p.get("candidate", {}).get("email")
             years = p.get("years_of_experience", 0.0)
             gaps_count = len(p.get("employment_gaps", []))
+            created_str = ""
+            if r.created_at:
+                if isinstance(r.created_at, datetime):
+                    created_str = r.created_at.strftime("%Y-%m-%d %I:%M %p IST")
+                else:
+                    created_str = str(r.created_at)
             results.append({
                 "id": r.id,
                 "name": name,
                 "email": email,
                 "years_of_experience": years,
                 "gaps_count": gaps_count,
-                "created_at": str(r.created_at)
+                "created_at": created_str
             })
         except Exception:
-            results.append({"id": r.id, "name": "Candidate", "created_at": str(r.created_at)})
+            c_str = r.created_at.strftime("%Y-%m-%d %I:%M %p IST") if isinstance(r.created_at, datetime) else str(r.created_at)
+            results.append({"id": r.id, "name": "Candidate", "created_at": c_str})
     return results

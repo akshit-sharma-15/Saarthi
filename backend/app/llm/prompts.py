@@ -34,6 +34,7 @@ Task: produce the HR evaluation JSON matching this schema exactly:
 For "evidence", map each field you filled to the exact resume snippet that
 supports it. If a field has no direct support, omit it from "evidence"
 rather than fabricating a snippet.
+Keep "evaluation_notes" and "evidence" concise and focused (under 400 words total).
 Return ONLY valid JSON."""
 
 RETRY_PROMPT_TEMPLATE = """Your previous JSON output failed schema validation with these errors:
