@@ -17,6 +17,10 @@ const navItems = [
 
 function Sidebar() {
   const location = useLocation();
+  const { candidate, candidateId, candidatesList, selectCandidate } = useCandidate();
+
+  const uploadedCandidates = candidatesList.filter(c => !c.id.startsWith('sample-'));
+  const sampleCandidates = candidatesList.filter(c => c.id.startsWith('sample-'));
 
   return (
     <aside className="w-[260px] bg-white border-r border-surface-200/80 h-screen fixed top-0 left-0 flex flex-col z-30 shrink-0">
@@ -35,6 +39,52 @@ function Sidebar() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Active Candidate Switcher */}
+      <div className="px-4 py-3 bg-surface-50 border-b border-surface-200/60">
+        <div className="flex items-center justify-between mb-1.5">
+          <span className="text-[10px] font-semibold text-ink-400 uppercase tracking-wider">
+            Active Candidate
+          </span>
+          {candidateId && (
+            <span className={`text-[9px] px-1.5 py-0.5 rounded font-medium ${
+              candidateId.startsWith('sample-')
+                ? 'bg-accent-50 text-accent-700 border border-accent-100'
+                : 'bg-emerald-50 text-emerald-700 border border-emerald-100'
+            }`}>
+              {candidateId.startsWith('sample-') ? 'Sample' : 'Uploaded'}
+            </span>
+          )}
+        </div>
+        {candidatesList.length > 0 ? (
+          <select
+            value={candidateId || ''}
+            onChange={(e) => selectCandidate(e.target.value)}
+            className="w-full bg-white border border-surface-200 text-ink-800 text-[12px] font-medium rounded-lg px-2.5 py-1.5 focus:outline-none focus:border-accent-500 shadow-xs cursor-pointer truncate"
+          >
+            {uploadedCandidates.length > 0 && (
+              <optgroup label="Uploaded Resumes">
+                {uploadedCandidates.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.years_of_experience ? c.years_of_experience.toFixed(1) : 0}y)
+                  </option>
+                ))}
+              </optgroup>
+            )}
+            {sampleCandidates.length > 0 && (
+              <optgroup label="Benchmark Samples">
+                {sampleCandidates.map(c => (
+                  <option key={c.id} value={c.id}>
+                    {c.name} ({c.years_of_experience ? c.years_of_experience.toFixed(1) : 0}y)
+                  </option>
+                ))}
+              </optgroup>
+            )}
+          </select>
+        ) : (
+          <p className="text-[11px] text-ink-400 italic">No resumes ingested yet</p>
+        )}
       </div>
 
       {/* Navigation */}
