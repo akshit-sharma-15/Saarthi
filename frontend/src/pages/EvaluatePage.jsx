@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Play, CheckCircle2, Circle, FileDown, Mail, RefreshCw, Zap, ArrowRight, X, Shield, FileText, Loader2, ShieldCheck, UploadCloud, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCandidate } from '../context/CandidateContext';
-import { API_BASE_URL, dispatchEmail } from '../api/client';
+import { API_BASE_URL, dispatchEmail, fetchDispatchConfig } from '../api/client';
 
 export default function EvaluatePage() {
   const navigate = useNavigate();
@@ -36,9 +36,22 @@ export default function EvaluatePage() {
   const [pdfDownloadUrl, setPdfDownloadUrl] = useState(savedState.pdfDownloadUrl || null);
   const [emailStatus, setEmailStatus] = useState(savedState.emailStatus || null);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
-  const [customRecipient, setCustomRecipient] = useState('asharma8892@gmail.com');
+  const [customRecipient, setCustomRecipient] = useState(import.meta.env.VITE_HR_EMAIL || 'asharma889452@gmail.com');
   const [isDispatchingEmail, setIsDispatchingEmail] = useState(false);
   const [dispatchMessage, setDispatchMessage] = useState(null);
+
+  // Fetch updated HR email from backend config
+  React.useEffect(() => {
+    fetchDispatchConfig()
+      .then((cfg) => {
+        if (cfg?.hr_email) {
+          setCustomRecipient(cfg.hr_email);
+        }
+      })
+      .catch((err) => {
+        console.warn('Could not fetch dispatch config:', err);
+      });
+  }, []);
 
   const handleSendEmail = async () => {
     setIsDispatchingEmail(true);
@@ -46,10 +59,17 @@ export default function EvaluatePage() {
     try {
       const res = await dispatchEmail(activeId, customRecipient);
       setEmailStatus(res.status || 'SENT');
-      setDispatchMessage({
-        type: 'success',
-        text: res.message || `Email successfully sent to ${customRecipient}!`
-      });
+      if (res.status === 'FAILED') {
+        setDispatchMessage({
+          type: 'error',
+          text: res.error || `Failed to dispatch email to ${customRecipient}`
+        });
+      } else {
+        setDispatchMessage({
+          type: 'success',
+          text: res.message || `Email successfully sent to ${customRecipient}!`
+        });
+      }
       saveEvaluationState(activeId, {
         ...(evaluationStates[activeId] || {}),
         emailStatus: res.status || 'SENT'
