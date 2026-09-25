@@ -1,7 +1,11 @@
 import re
 from datetime import datetime, date
 from typing import List, Tuple, Optional
-from dateutil import parser as date_parser
+try:
+    from dateutil import parser as date_parser
+except ImportError:
+    date_parser = None
+
 from backend.app.schemas import Experience, EmploymentGap
 
 THRESHOLD_DAYS = 60
@@ -39,17 +43,19 @@ def parse_date_str(date_str: str, is_end_date: bool = False) -> Optional[date]:
         year = int(m_y.group(1))
         return date(year, 12, 31) if is_end_date else date(year, 1, 1)
 
-    # Try generic dateutil parsing
-    try:
-        dt = date_parser.parse(clean_str, fuzzy=True, default=datetime(2000, 1, 1))
-        d = dt.date()
-        # If it was just year and month or only year, adjust end date to end of month
-        if is_end_date and d.day == 1:
-            month = d.month
-            return date(d.year, month, 28 if month == 2 else (30 if month in [4, 6, 9, 11] else 31))
-        return d
-    except Exception:
-        return None
+    # Try generic dateutil parsing if available
+    if date_parser:
+        try:
+            dt = date_parser.parse(clean_str, fuzzy=True, default=datetime(2000, 1, 1))
+            d = dt.date()
+            # If it was just year and month or only year, adjust end date to end of month
+            if is_end_date and d.day == 1:
+                month = d.month
+                return date(d.year, month, 28 if month == 2 else (30 if month in [4, 6, 9, 11] else 31))
+            return d
+        except Exception:
+            return None
+    return None
 
 def merge_intervals(intervals: List[Tuple[date, date]]) -> List[Tuple[date, date]]:
     """
