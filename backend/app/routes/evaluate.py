@@ -144,47 +144,132 @@ async def download_evaluation_pdf(
 ):
     """
     Downloads or streams the generated evaluation PDF.
+    Auto-regenerates dynamically if missing on ephemeral filesystems.
     """
-    eval_record = db.query(EvaluationDB).filter(EvaluationDB.id == evaluation_id).first()
-    if not eval_record or not eval_record.pdf_path or not os.path.exists(eval_record.pdf_path):
-        # Look in default storage if id is a filename or candidate_id
-        storage_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "storage", "evaluations")
-        candidate_eval = db.query(EvaluationDB).filter(EvaluationDB.candidate_id == evaluation_id).first()
-        if candidate_eval and candidate_eval.pdf_path and os.path.exists(candidate_eval.pdf_path):
-            eval_record = candidate_eval
-        else:
-            raise HTTPException(status_code=404, detail="Evaluation PDF not found")
+    from backend.app.documents.pdf_builder import generate_evaluation_pdf
 
-    filename = os.path.basename(eval_record.pdf_path)
-    return FileResponse(
-        eval_record.pdf_path,
-        media_type="application/pdf",
-        filename=filename,
-        headers={"Content-Disposition": f"inline; filename={filename}"}
-    )
+    storage_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "storage", "evaluations")
+    os.makedirs(storage_dir, exist_ok=True)
+
+    # 1. Try finding EvaluationDB by evaluation_id or candidate_id
+    eval_record = db.query(EvaluationDB).filter(EvaluationDB.id == evaluation_id).first()
+    if not eval_record:
+        eval_record = db.query(EvaluationDB).filter(EvaluationDB.candidate_id == evaluation_id).order_by(EvaluationDB.created_at.desc()).first()
+
+    if eval_record:
+        if not eval_record.pdf_path or not os.path.exists(eval_record.pdf_path):
+            eval_data = json.loads(eval_record.evaluation_json)
+            evaluation = Evaluation.model_validate(eval_data)
+            cand = db.query(CandidateDB).filter(CandidateDB.id == eval_record.candidate_id).first()
+            profile = CandidateProfile.model_validate_json(cand.profile_json) if cand else None
+            pdf_filename = f"evaluation_{eval_record.candidate_id}.pdf"
+            pdf_path = os.path.join(storage_dir, pdf_filename)
+            generate_evaluation_pdf(evaluation, pdf_path, profile=profile)
+            eval_record.pdf_path = pdf_path
+            db.commit()
+
+        filename = os.path.basename(eval_record.pdf_path)
+        return FileResponse(
+            eval_record.pdf_path,
+            media_type="application/pdf",
+            filename=filename,
+            headers={"Content-Disposition": f"inline; filename={filename}"}
+        )
+
+    # 2. Check CandidateDB (if user clicks download directly for an uploaded candidate)
+    cand = db.query(CandidateDB).filter(CandidateDB.id == evaluation_id).first()
+    if cand:
+        profile = CandidateProfile.model_validate_json(cand.profile_json)
+        primary_skills = []
+        for val in profile.skills.model_dump().values():
+            if isinstance(val, list):
+                primary_skills.extend(val)
+        edu_str = profile.education[0].institution if profile.education else "Not specified"
+        evaluation = Evaluation(
+            candidate_name=profile.candidate.name,
+            email=profile.candidate.email,
+            primary_skillset=primary_skills[:6] if primary_skills else ["Not specified"],
+            years_of_experience=profile.years_of_experience,
+            education=edu_str,
+            employment_gaps=profile.employment_gaps,
+            recommended_role="Candidate Profile Summary",
+            evaluation_notes=f"Candidate demonstrates {profile.years_of_experience:.1f} years of verified experience.",
+            evidence={"years_of_experience": "Calculated from verified employment dates."}
+        )
+        pdf_filename = f"evaluation_{cand.id}.pdf"
+        pdf_path = os.path.join(storage_dir, pdf_filename)
+        generate_evaluation_pdf(evaluation, pdf_path, profile=profile)
+        return FileResponse(
+            pdf_path,
+            media_type="application/pdf",
+            filename=pdf_filename,
+            headers={"Content-Disposition": f"inline; filename={pdf_filename}"}
+        )
+
+    raise HTTPException(status_code=404, detail="Evaluation PDF not found")
 
 @router.post("/dispatch/email")
 async def dispatch_email_manual(
     payload: DispatchEmailRequest,
     db: Session = Depends(get_db)
 ):
-    """Manually re-triggers email dispatch for an existing evaluation."""
+    """Manually re-triggers email dispatch for an existing evaluation or candidate."""
     eval_rec = db.query(EvaluationDB).filter(EvaluationDB.id == payload.evaluation_id).first()
     if not eval_rec:
-        raise HTTPException(status_code=404, detail="Evaluation not found")
+        eval_rec = db.query(EvaluationDB).filter(EvaluationDB.candidate_id == payload.evaluation_id).order_by(EvaluationDB.created_at.desc()).first()
 
-    eval_data = json.loads(eval_rec.evaluation_json)
-    cand_name = eval_data.get("candidate_name", "Candidate")
-    notes = eval_data.get("evaluation_notes", "")
+    cand_name = "Candidate"
+    notes = "Automated candidate evaluation synthesis."
+    pdf_path = ""
+
+    from backend.app.documents.pdf_builder import generate_evaluation_pdf
+
+    storage_dir = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "storage", "evaluations")
+    os.makedirs(storage_dir, exist_ok=True)
+
+    if eval_rec:
+        eval_data = json.loads(eval_rec.evaluation_json)
+        cand_name = eval_data.get("candidate_name", "Candidate")
+        notes = eval_data.get("evaluation_notes", "")
+        pdf_path = eval_rec.pdf_path
+        if not pdf_path or not os.path.exists(pdf_path):
+            evaluation = Evaluation.model_validate(eval_data)
+            pdf_path = os.path.join(storage_dir, f"evaluation_{eval_rec.candidate_id}.pdf")
+            generate_evaluation_pdf(evaluation, pdf_path)
+            eval_rec.pdf_path = pdf_path
+            db.commit()
+    else:
+        # Check CandidateDB directly
+        cand = db.query(CandidateDB).filter(CandidateDB.id == payload.evaluation_id).first()
+        if not cand:
+            raise HTTPException(status_code=404, detail="Evaluation or Candidate not found")
+        profile = CandidateProfile.model_validate_json(cand.profile_json)
+        cand_name = profile.candidate.name
+        notes = f"Verified facts for {cand_name} ({profile.years_of_experience:.1f} years experience)."
+        pdf_path = os.path.join(storage_dir, f"evaluation_{cand.id}.pdf")
+        if not os.path.exists(pdf_path):
+            evaluation = Evaluation(
+                candidate_name=profile.candidate.name,
+                email=profile.candidate.email,
+                primary_skillset=["Verified Profile"],
+                years_of_experience=profile.years_of_experience,
+                education="Verified",
+                employment_gaps=profile.employment_gaps,
+                recommended_role="Candidate Profile",
+                evaluation_notes=notes,
+                evidence={}
+            )
+            generate_evaluation_pdf(evaluation, pdf_path, profile=profile)
 
     res = mailer.dispatch_evaluation(
         candidate_name=cand_name,
-        pdf_path=eval_rec.pdf_path,
+        pdf_path=pdf_path,
         evaluation_summary=notes,
         recipient=payload.recipient
     )
 
-    eval_rec.dispatch_status = res.get("status", "SENT")
-    db.commit()
+    if eval_rec:
+        eval_rec.dispatch_status = res.get("status", "SENT")
+        db.commit()
 
     return res

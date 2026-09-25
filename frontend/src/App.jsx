@@ -6,7 +6,7 @@ import UploadPage from './pages/UploadPage';
 import ProfilePage from './pages/ProfilePage';
 import AskPage from './pages/AskPage';
 import EvaluatePage from './pages/EvaluatePage';
-import { CandidateProvider } from './context/CandidateContext';
+import { CandidateProvider, useCandidate } from './context/CandidateContext';
 
 const navItems = [
   { path: '/', label: 'Upload Resume', icon: UploadCloud, desc: 'Parse & extract' },

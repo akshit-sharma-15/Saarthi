@@ -6,7 +6,7 @@ import { useCandidate } from '../context/CandidateContext';
 
 export default function AskPage() {
   const navigate = useNavigate();
-  const { candidateId, candidate } = useCandidate();
+  const { candidateId, candidate, chatHistories = {}, saveChatHistory = () => {} } = useCandidate();
   const messagesEndRef = useRef(null);
 
   const candName = candidate?.candidate?.name || 'Candidate';
@@ -15,15 +15,22 @@ export default function AskPage() {
   const [loading, setLoading] = useState(false);
   const [messages, setMessages] = useState([]);
 
-  // Initialize welcome message when candidate changes
+  // Initialize or restore messages when candidate changes
   useEffect(() => {
-    if (candidate) {
-      setMessages([{
-        role: 'agent',
-        text: `Ready to answer questions about ${candName}. All responses are strictly grounded in resume text with evidence citations. If information is absent, the system will explicitly state "Not specified in the resume."`,
-        evidence: null,
-        grounded: true
-      }]);
+    if (candidate && candidateId) {
+      const saved = chatHistories[candidateId];
+      if (saved && saved.length > 0) {
+        setMessages(saved);
+      } else {
+        const welcome = [{
+          role: 'agent',
+          text: `Ready to answer questions about ${candName}. All responses are strictly grounded in resume text with evidence citations. If information is absent, the system will explicitly state "Not specified in the resume."`,
+          evidence: null,
+          grounded: true
+        }];
+        setMessages(welcome);
+        saveChatHistory(candidateId, welcome);
+      }
     }
   }, [candidateId]);
 
@@ -43,32 +50,33 @@ export default function AskPage() {
     if (!q || loading || !candidateId) return;
 
     const userMessage = { role: 'user', text: q };
-    setMessages(prev => [...prev, userMessage]);
+    const currentList = [...messages, userMessage];
+    setMessages(currentList);
     setQuery('');
     setLoading(true);
 
     try {
       const response = await askQuestion(candidateId, q);
-      setMessages(prev => [
-        ...prev,
-        {
-          role: 'agent',
-          text: response.answer,
-          evidence: response.evidence,
-          grounded: response.grounded
-        }
-      ]);
+      const agentMessage = {
+        role: 'agent',
+        text: response.answer,
+        evidence: response.evidence,
+        grounded: response.grounded
+      };
+      const updatedList = [...currentList, agentMessage];
+      setMessages(updatedList);
+      saveChatHistory(candidateId, updatedList);
     } catch (err) {
       console.error(err);
-      setMessages(prev => [
-        ...prev,
-        {
-          role: 'agent',
-          text: 'Unable to communicate with the verification engine. Please ensure the backend is running.',
-          evidence: null,
-          grounded: false
-        }
-      ]);
+      const errorMessage = {
+        role: 'agent',
+        text: 'Unable to communicate with the verification engine. Please ensure the backend is running.',
+        evidence: null,
+        grounded: false
+      };
+      const updatedList = [...currentList, errorMessage];
+      setMessages(updatedList);
+      saveChatHistory(candidateId, updatedList);
     } finally {
       setLoading(false);
     }
@@ -96,16 +104,31 @@ export default function AskPage() {
   return (
     <div className="animate-fade-in flex flex-col h-[calc(100vh-80px)]">
       {/* Header */}
-      <div className="mb-4 flex items-start justify-between">
+      <div className="mb-3 flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-ink-900 tracking-tight">Ask AI</h2>
           <p className="text-[13px] text-ink-500 mt-1">
             Interrogate parsed resume facts with evidence-based, anti-hallucination responses.
           </p>
         </div>
-        <span className="badge-info mt-1">
-          <User size={10} /> {candName}
-        </span>
+      </div>
+
+      {/* Active Candidate Banner */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-2.5 rounded-xl bg-white border border-surface-200/80 shadow-card mb-4">
+        <div className="flex items-center gap-3">
+          <div className="w-7 h-7 rounded-lg bg-accent-50 text-accent-700 border border-accent-100 flex items-center justify-center font-bold text-xs">
+            {candName.charAt(0).toUpperCase()}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs font-semibold text-ink-900">{candName}</span>
+            <span className="text-[9px] px-1.5 py-0.5 rounded font-medium bg-emerald-50 text-emerald-700 border border-emerald-100">
+              Active Resume
+            </span>
+            <span className="text-[10px] text-ink-400 font-mono">
+              ID: {candidateId}
+            </span>
+          </div>
+        </div>
       </div>
 
       {/* Preset Prompts */}

@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
-import { Play, CheckCircle2, Circle, FileDown, Mail, RefreshCw, Zap, ArrowRight, X, Shield, FileText, Loader2, ShieldCheck, UploadCloud } from 'lucide-react';
+import { Play, CheckCircle2, Circle, FileDown, Mail, RefreshCw, Zap, ArrowRight, X, Shield, FileText, Loader2, ShieldCheck, UploadCloud, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { useCandidate } from '../context/CandidateContext';
-import { API_BASE_URL } from '../api/client';
+import { API_BASE_URL, dispatchEmail } from '../api/client';
 
 export default function EvaluatePage() {
   const navigate = useNavigate();
-  const { candidateId, candidate } = useCandidate();
+  const { candidateId, candidate, evaluationStates = {}, saveEvaluationState = () => {} } = useCandidate();
   const candName = candidate?.candidate?.name || 'Candidate';
 
   // Empty state
@@ -29,12 +29,49 @@ export default function EvaluatePage() {
   }
 
   const activeId = candidateId;
+  const savedState = evaluationStates[activeId] || {};
 
   const [isRunning, setIsRunning] = useState(false);
-  const [completedSteps, setCompletedSteps] = useState([]);
-  const [pdfDownloadUrl, setPdfDownloadUrl] = useState(null);
-  const [emailStatus, setEmailStatus] = useState(null);
+  const [completedSteps, setCompletedSteps] = useState(savedState.completedSteps || []);
+  const [pdfDownloadUrl, setPdfDownloadUrl] = useState(savedState.pdfDownloadUrl || null);
+  const [emailStatus, setEmailStatus] = useState(savedState.emailStatus || null);
   const [emailModalOpen, setEmailModalOpen] = useState(false);
+  const [customRecipient, setCustomRecipient] = useState('asharma8892@gmail.com');
+  const [isDispatchingEmail, setIsDispatchingEmail] = useState(false);
+  const [dispatchMessage, setDispatchMessage] = useState(null);
+
+  const handleSendEmail = async () => {
+    setIsDispatchingEmail(true);
+    setDispatchMessage(null);
+    try {
+      const res = await dispatchEmail(activeId, customRecipient);
+      setEmailStatus(res.status || 'SENT');
+      setDispatchMessage({
+        type: 'success',
+        text: res.message || `Email successfully sent to ${customRecipient}!`
+      });
+      saveEvaluationState(activeId, {
+        ...(evaluationStates[activeId] || {}),
+        emailStatus: res.status || 'SENT'
+      });
+    } catch (err) {
+      console.error(err);
+      setDispatchMessage({
+        type: 'error',
+        text: err.response?.data?.detail || err.message || 'Failed to dispatch email'
+      });
+    } finally {
+      setIsDispatchingEmail(false);
+    }
+  };
+
+  // Restore state if candidate changes or when coming back to page
+  React.useEffect(() => {
+    const s = evaluationStates[activeId] || {};
+    if (s.completedSteps) setCompletedSteps(s.completedSteps);
+    if (s.pdfDownloadUrl) setPdfDownloadUrl(s.pdfDownloadUrl);
+    if (s.emailStatus) setEmailStatus(s.emailStatus);
+  }, [activeId, evaluationStates]);
 
   const steps = [
     { label: "Profile facts verified", desc: "PyMuPDF extraction validated", icon: Shield },
@@ -123,10 +160,18 @@ export default function EvaluatePage() {
     }
 
     if (step === 'complete') {
-      setCompletedSteps([0, 1, 2, 3, 4, 5, 6]);
+      const allSteps = [0, 1, 2, 3, 4, 5, 6];
+      setCompletedSteps(allSteps);
       setIsRunning(false);
-      if (pdf_url) setPdfDownloadUrl(pdf_url);
-      if (dispatch_status) setEmailStatus(dispatch_status);
+      const finalPdf = pdf_url || `/api/evaluation/${activeId}/download`;
+      const finalStatus = dispatch_status || 'SENT';
+      if (pdf_url) setPdfDownloadUrl(finalPdf);
+      if (dispatch_status) setEmailStatus(finalStatus);
+      saveEvaluationState(activeId, {
+        completedSteps: allSteps,
+        pdfDownloadUrl: finalPdf,
+        emailStatus: finalStatus
+      });
     }
   };
 
@@ -138,8 +183,14 @@ export default function EvaluatePage() {
       if (current >= steps.length) {
         clearInterval(interval);
         setIsRunning(false);
-        setPdfDownloadUrl(`/api/evaluation/${activeId}/download`);
+        const finalPdf = `/api/evaluation/${activeId}/download`;
+        setPdfDownloadUrl(finalPdf);
         setEmailStatus('MOCKED');
+        saveEvaluationState(activeId, {
+          completedSteps: [0, 1, 2, 3, 4, 5, 6],
+          pdfDownloadUrl: finalPdf,
+          emailStatus: 'MOCKED'
+        });
       }
     }, 750);
   };
@@ -150,13 +201,40 @@ export default function EvaluatePage() {
   return (
     <div className="animate-fade-in max-w-2xl mx-auto pt-4">
       {/* Header */}
-      <div className="text-center mb-10">
+      <div className="text-center mb-6">
         <h2 className="text-2xl font-semibold text-ink-900 tracking-tight">Agent Evaluation</h2>
         <p className="text-ink-500 mt-2 text-sm leading-relaxed max-w-md mx-auto">
           Convert verified candidate facts for{' '}
           <span className="font-semibold text-ink-800">{candName}</span>{' '}
           into an actionable HR evaluation report.
         </p>
+      </div>
+
+      {/* Active Candidate Banner */}
+      <div className="flex flex-wrap items-center justify-between gap-3 px-4 py-3 rounded-2xl bg-white border border-surface-200/80 shadow-card mb-8">
+        <div className="flex items-center gap-3">
+          <div className="w-8 h-8 rounded-xl bg-accent-50 text-accent-700 border border-accent-100 flex items-center justify-center font-bold text-xs">
+            {candName.charAt(0).toUpperCase()}
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-ink-900">{candName}</span>
+              <span className="text-[10px] px-2 py-0.5 rounded-md font-medium bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                Active Resume
+              </span>
+            </div>
+            <p className="text-[11px] text-ink-400 font-mono mt-0.5">
+              ID: {activeId} {candidate.candidate?.email ? `• ${candidate.candidate.email}` : ''}
+            </p>
+          </div>
+        </div>
+        <button 
+          onClick={() => navigate('/profile')} 
+          className="text-xs font-medium text-accent-600 hover:text-accent-700 flex items-center gap-1"
+        >
+          View Profile <ArrowRight size={13} />
+        </button>
       </div>
 
       {/* Start State */}
@@ -291,7 +369,7 @@ export default function EvaluatePage() {
               <div className="border-t border-surface-200/60 pt-5 space-y-3 animate-slide-up">
                 <div className="grid grid-cols-2 gap-3">
                   <a
-                    href={pdfDownloadUrl || `/api/evaluation/${activeId}/download`}
+                    href={pdfDownloadUrl ? (pdfDownloadUrl.startsWith('http') ? pdfDownloadUrl : `${API_BASE_URL}${pdfDownloadUrl}`) : `${API_BASE_URL}/api/evaluation/${activeId}/download`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="btn-secondary justify-center text-xs py-3"
@@ -333,8 +411,8 @@ export default function EvaluatePage() {
                   <Mail size={14} className="text-accent-600" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-semibold text-ink-900">HR Email Dispatch Record</h3>
-                  <p className="text-[10px] text-ink-400">Mock SMTP delivery log</p>
+                  <h3 className="text-sm font-semibold text-ink-900">HR Email Dispatch</h3>
+                  <p className="text-[10px] text-ink-400">SMTP delivery control & status</p>
                 </div>
               </div>
               <button
@@ -346,38 +424,84 @@ export default function EvaluatePage() {
             </div>
 
             {/* Modal body */}
-            <div className="px-6 py-5">
+            <div className="px-6 py-5 space-y-4">
               <div className="card bg-surface-50 p-4 space-y-2.5 font-mono text-[12px] text-ink-600">
                 <div className="flex items-start gap-2">
-                  <span className="text-ink-400 w-20 shrink-0">To:</span>
-                  <span>hr-screening@company.com</span>
+                  <span className="text-ink-400 w-24 shrink-0">Subject:</span>
+                  <span className="font-semibold text-ink-800">Candidate Evaluation: {candName}</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-ink-400 w-20 shrink-0">Subject:</span>
-                  <span>Candidate Evaluation: {candName}</span>
+                  <span className="text-ink-400 w-24 shrink-0">Status:</span>
+                  <span className={`font-sans font-medium text-[11px] px-2 py-0.5 rounded-full ${
+                    emailStatus === 'SENT' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'badge-neutral'
+                  }`}>
+                    {emailStatus || 'READY TO DISPATCH'}
+                  </span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-ink-400 w-20 shrink-0">Status:</span>
-                  <span className="badge-success font-sans">{emailStatus || 'DELIVERED (MOCKED)'}</span>
+                  <span className="text-ink-400 w-24 shrink-0">Attachment:</span>
+                  <span>Corporate Evaluation PDF</span>
                 </div>
                 <div className="flex items-start gap-2">
-                  <span className="text-ink-400 w-20 shrink-0">Attachment:</span>
-                  <span>evaluation_report.pdf</span>
-                </div>
-                <div className="flex items-start gap-2">
-                  <span className="text-ink-400 w-20 shrink-0">Grounding:</span>
+                  <span className="text-ink-400 w-24 shrink-0">Grounding:</span>
                   <span className="badge-info font-sans">
-                    <ShieldCheck size={9} /> Verified
+                    <ShieldCheck size={9} /> Verified & Anti-hallucination
                   </span>
                 </div>
               </div>
+
+              {/* Recipient Input & Send Button */}
+              <div>
+                <label className="text-xs font-semibold text-ink-700 block mb-1.5">
+                  Recipient HR / Hiring Manager Email:
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="email"
+                    value={customRecipient}
+                    onChange={(e) => setCustomRecipient(e.target.value)}
+                    placeholder="hr-team@company.com"
+                    className="flex-1 bg-surface-50 border border-surface-200 rounded-xl px-3 py-2 text-xs text-ink-900 focus:outline-none focus:border-accent-500 focus:ring-1 focus:ring-accent-500"
+                  />
+                  <button
+                    onClick={handleSendEmail}
+                    disabled={isDispatchingEmail || !customRecipient}
+                    className="btn-primary text-xs px-4 shrink-0"
+                  >
+                    {isDispatchingEmail ? (
+                      <>
+                        <Loader2 size={13} className="animate-spin" /> Sending...
+                      </>
+                    ) : (
+                      <>
+                        <Mail size={13} /> Send Email
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {dispatchMessage && (
+                <div className={`p-3 rounded-xl text-xs flex items-center gap-2 ${
+                  dispatchMessage.type === 'success' 
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-rose-50 text-rose-800 border border-rose-200'
+                }`}>
+                  {dispatchMessage.type === 'success' ? (
+                    <CheckCircle2 size={14} className="text-emerald-600 shrink-0" />
+                  ) : (
+                    <AlertCircle size={14} className="text-rose-600 shrink-0" />
+                  )}
+                  <span>{dispatchMessage.text}</span>
+                </div>
+              )}
             </div>
 
             {/* Modal footer */}
             <div className="px-6 py-4 border-t border-surface-200/60 flex justify-end">
               <button
                 onClick={() => setEmailModalOpen(false)}
-                className="btn-primary text-xs px-5"
+                className="btn-secondary text-xs px-5"
               >
                 Close
               </button>

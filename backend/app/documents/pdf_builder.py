@@ -1,4 +1,5 @@
 import os
+import html
 from datetime import datetime
 from reportlab.lib.pagesizes import letter
 from reportlab.lib import colors
@@ -8,6 +9,12 @@ from reportlab.platypus import (
     SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable, KeepTogether
 )
 from backend.app.schemas import Evaluation, CandidateProfile
+
+def clean_xml(val) -> str:
+    """Escapes XML entities so ReportLab Paragraph never crashes on &, <, >, None."""
+    if val is None:
+        return "Not specified"
+    return html.escape(str(val)).replace("\n", "<br/>")
 
 def generate_evaluation_pdf(
     evaluation: Evaluation,
@@ -126,19 +133,19 @@ def generate_evaluation_pdf(
     cand_info = [
         [
             Paragraph("<b>Candidate Name:</b>", bold_label),
-            Paragraph(evaluation.candidate_name, body_style),
+            Paragraph(clean_xml(evaluation.candidate_name), body_style),
             Paragraph("<b>Recommended Role:</b>", bold_label),
-            Paragraph(f"<b><font color='#1E3A8A'>{evaluation.recommended_role}</font></b>", body_style)
+            Paragraph(f"<b><font color='#1E3A8A'>{clean_xml(evaluation.recommended_role)}</font></b>", body_style)
         ],
         [
             Paragraph("<b>Email:</b>", bold_label),
-            Paragraph(email_str, body_style),
+            Paragraph(clean_xml(email_str), body_style),
             Paragraph("<b>Years Experience:</b>", bold_label),
             Paragraph(f"{evaluation.years_of_experience:.1f} years (Verified)", body_style)
         ],
         [
             Paragraph("<b>Education:</b>", bold_label),
-            Paragraph(evaluation.education, body_style),
+            Paragraph(clean_xml(evaluation.education), body_style),
             Paragraph("<b>Gaps Detected:</b>", bold_label),
             Paragraph(f"{len(evaluation.employment_gaps)} gap(s)", gap_style if evaluation.employment_gaps else body_style)
         ]
@@ -159,7 +166,7 @@ def generate_evaluation_pdf(
     # 3. Primary Skillset
     story.append(Paragraph("Verified Primary Skillset", heading2_style))
     skills_text = ", ".join(evaluation.primary_skillset) if evaluation.primary_skillset else "Not specified in resume"
-    story.append(Paragraph(skills_text, body_style))
+    story.append(Paragraph(clean_xml(skills_text), body_style))
     story.append(Spacer(1, 10))
 
     # 4. Employment Gaps Analysis (CRITICAL SECTION)
@@ -173,12 +180,12 @@ def generate_evaluation_pdf(
             ]
         ]
         for gap in evaluation.employment_gaps:
-            status_text = f"<font color='red'><b>{gap.status.upper()}</b></font>" if gap.status == "unexplained" else f"<font color='green'><b>{gap.status.upper()}</b></font>"
+            status_text = f"<font color='red'><b>{clean_xml(gap.status.upper())}</b></font>" if gap.status == "unexplained" else f"<font color='green'><b>{clean_xml(gap.status.upper())}</b></font>"
             reason_text = gap.reason or "No explanation documented in resume text (Refused inference)."
             gap_rows.append([
-                Paragraph(gap.period, body_style),
+                Paragraph(clean_xml(gap.period), body_style),
                 Paragraph(status_text, body_style),
-                Paragraph(reason_text, body_style)
+                Paragraph(clean_xml(reason_text), body_style)
             ])
         gap_table = Table(gap_rows, colWidths=[130, 90, 310])
         gap_table.setStyle(TableStyle([
@@ -198,7 +205,7 @@ def generate_evaluation_pdf(
 
     # 5. HR Evaluation Notes
     story.append(Paragraph("HR Evaluation Notes & Synthesis", heading2_style))
-    eval_box = [[Paragraph(evaluation.evaluation_notes, body_style)]]
+    eval_box = [[Paragraph(clean_xml(evaluation.evaluation_notes), body_style)]]
     eval_table = Table(eval_box, colWidths=[530])
     eval_table.setStyle(TableStyle([
         ('BACKGROUND', (0,0), (-1,-1), card_bg),
@@ -222,8 +229,8 @@ def generate_evaluation_pdf(
     if evaluation.evidence:
         for attr, snip in evaluation.evidence.items():
             evidence_rows.append([
-                Paragraph(f"<b>{attr.replace('_', ' ').title()}</b>", body_style),
-                Paragraph(f'"{snip}"', evidence_style)
+                Paragraph(f"<b>{clean_xml(attr.replace('_', ' ').title())}</b>", body_style),
+                Paragraph(f'"{clean_xml(snip)}"', evidence_style)
             ])
     else:
         evidence_rows.append([
