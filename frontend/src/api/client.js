@@ -43,4 +43,9 @@ export const dispatchEmail = async (evaluationId, recipient) => {
   return response.data;
 };
 
+export const fetchDispatchConfig = async () => {
+  const response = await api.get('/api/dispatch/config');
+  return response.data;
+};
+
 export default api;
