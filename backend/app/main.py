@@ -1,6 +1,13 @@
 import os
 import json
 from contextlib import asynccontextmanager
+from dotenv import load_dotenv
+
+load_dotenv()
+backend_env = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+if os.path.exists(backend_env):
+    load_dotenv(backend_env)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
