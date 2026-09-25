@@ -1,0 +1,83 @@
+{
+  "candidate": {
+    "name": "Arjun Nair",
+    "email": "arjun.nair@techmail.com",
+    "phone": "+91 88990 77665",
+    "location": "Kochi, India"
+  },
+  "education": [
+    {
+      "institution": "National Institute of Technology Calicut",
+      "degree": "Bachelor of Technology",
+      "field": "Mechanical Engineering",
+      "year": "2016"
+    },
+    {
+      "institution": "Indian School of Business",
+      "degree": "Post Graduate Programme",
+      "field": "Management",
+      "year": "2022"
+    }
+  ],
+  "experience": [
+    {
+      "company": "Chargebee",
+      "title": "Product Manager",
+      "start_date": "2024-01",
+      "end_date": "present",
+      "responsibilities": [
+        "Owning subscription billing product roadmap serving 4,500+ B2B SaaS customers.",
+        "Launched usage-based billing feature increasing enterprise deal size by 25%.",
+        "Collaborating with engineering, design, and GTM teams across 3 time zones."
+      ]
+    },
+    {
+      "company": "Razorpay",
+      "title": "Associate Product Manager",
+      "start_date": "2022-07",
+      "end_date": "2023-11",
+      "responsibilities": [
+        "Managed payment links product used by 500K+ small businesses.",
+        "Drove 30% improvement in payment conversion through UX-driven A/B experiments.",
+        "Wrote PRDs and conducted user research with 50+ merchants monthly."
+      ]
+    },
+    {
+      "company": "Tata Motors",
+      "title": "Graduate Engineer Trainee",
+      "start_date": "2016-07",
+      "end_date": "2019-06",
+      "responsibilities": [
+        "Managed supply chain operations for EV battery assembly line.",
+        "Led Six Sigma green belt project reducing manufacturing defects by 15%.",
+        "Built Excel-based production forecasting dashboards for plant management."
+      ]
+    }
+  ],
+  "skills": {
+    "product": ["Product Strategy", "Roadmap Planning", "A/B Testing", "User Research"],
+    "tools": ["Jira", "Figma", "Amplitude", "Mixpanel", "SQL"],
+    "domain": ["SaaS", "Fintech", "Subscription Billing", "Payments"],
+    "frameworks": ["Jobs-to-be-Done", "RICE Scoring", "OKRs"]
+  },
+  "projects": [
+    {
+      "name": "Merchant Onboarding Redesign",
+      "description": "Led complete redesign of merchant KYC flow reducing onboarding time from 48 hours to 4 hours.",
+      "evidence": "Shipped at Razorpay impacting 200K+ new merchants."
+    }
+  ],
+  "certifications": [
+    "Certified Scrum Product Owner (CSPO)",
+    "Six Sigma Green Belt"
+  ],
+  "employment_gaps": [
+    {
+      "period": "2019-07 to 2022-06",
+      "status": "explained",
+      "reason": "MBA at Indian School of Business (full-time 1-year PGP) and career transition preparation"
+    }
+  ],
+  "years_of_experience": 5.8,
+  "raw_text": "Arjun Nair\nKochi, India | arjun.nair@techmail.com | +91 88990 77665\n\nPROFESSIONAL SUMMARY\nProduct Manager with a unique blend of engineering and MBA background. 5+ years spanning manufacturing operations and B2B SaaS product management in fintech.\n\nEDUCATION\nIndian School of Business — PGP in Management (2022)\nNIT Calicut — B.Tech in Mechanical Engineering (2016)\n\nWORK EXPERIENCE\n\nChargebee — Product Manager\n2024-01 – Present | Chennai\n- Owning subscription billing product roadmap serving 4,500+ B2B SaaS customers.\n- Launched usage-based billing feature increasing enterprise deal size by 25%.\n- Collaborating with engineering, design, and GTM teams across 3 time zones.\n\nRazorpay — Associate Product Manager\n2022-07 – 2023-11 | Bengaluru\n- Managed payment links product used by 500K+ small businesses.\n- Drove 30% improvement in payment conversion through UX-driven A/B experiments.\n- Wrote PRDs and conducted user research with 50+ merchants monthly.\n\nCareer Break — MBA at ISB\n2019-07 – 2022-06\n- Full-time Post Graduate Programme in Management at Indian School of Business.\n- Specialized in Product Management and Technology Strategy.\n\nTata Motors — Graduate Engineer Trainee\n2016-07 – 2019-06 | Pune\n- Managed supply chain operations for EV battery assembly line.\n- Led Six Sigma green belt project reducing manufacturing defects by 15%.\n- Built Excel-based production forecasting dashboards.\n\nTECHNICAL SKILLS\nProduct: Product Strategy, Roadmap Planning, A/B Testing, User Research\nTools: Jira, Figma, Amplitude, Mixpanel, SQL\nDomain: SaaS, Fintech, Subscription Billing, Payments\n\nCERTIFICATIONS\n- Certified Scrum Product Owner (CSPO)\n- Six Sigma Green Belt"
+}

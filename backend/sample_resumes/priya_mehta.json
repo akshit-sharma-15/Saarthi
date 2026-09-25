@@ -1,0 +1,76 @@
+{
+  "candidate": {
+    "name": "Priya Mehta",
+    "email": "priya.mehta@outlook.com",
+    "phone": "+91 87654 32100",
+    "location": "Mumbai, India"
+  },
+  "education": [
+    {
+      "institution": "Indian Institute of Technology Bombay",
+      "degree": "Master of Technology",
+      "field": "Data Science and Artificial Intelligence",
+      "year": "2020"
+    },
+    {
+      "institution": "University of Pune",
+      "degree": "Bachelor of Engineering",
+      "field": "Information Technology",
+      "year": "2018"
+    }
+  ],
+  "experience": [
+    {
+      "company": "Flipkart",
+      "title": "Senior Data Scientist",
+      "start_date": "2023-06",
+      "end_date": "present",
+      "responsibilities": [
+        "Leading ML-powered product recommendation engine serving 200M+ monthly active users.",
+        "Designed real-time pricing optimization model reducing markdowns by 18%.",
+        "Mentoring a team of 4 junior data scientists on MLOps best practices."
+      ]
+    },
+    {
+      "company": "Zomato",
+      "title": "Data Scientist",
+      "start_date": "2020-09",
+      "end_date": "2023-05",
+      "responsibilities": [
+        "Built demand forecasting models using LightGBM achieving 92% accuracy on 7-day predictions.",
+        "Implemented A/B testing framework used across 15+ product experiments per quarter.",
+        "Developed NLP pipeline for restaurant review sentiment classification using BERT."
+      ]
+    },
+    {
+      "company": "TCS Research",
+      "title": "Research Intern",
+      "start_date": "2019-05",
+      "end_date": "2020-07",
+      "responsibilities": [
+        "Published paper on federated learning for privacy-preserving healthcare data at IEEE conference.",
+        "Built end-to-end ML pipeline for anomaly detection in network traffic data."
+      ]
+    }
+  ],
+  "skills": {
+    "programming": ["Python", "R", "SQL", "Scala"],
+    "ml_frameworks": ["PyTorch", "TensorFlow", "Scikit-learn", "Hugging Face"],
+    "data_tools": ["Spark", "Airflow", "dbt", "Tableau"],
+    "cloud": ["AWS SageMaker", "GCP Vertex AI", "MLflow"]
+  },
+  "projects": [
+    {
+      "name": "Dynamic Pricing Engine",
+      "description": "Multi-armed bandit approach to real-time e-commerce pricing with Thompson sampling.",
+      "evidence": "Deployed at Flipkart reducing revenue leakage by 12%."
+    }
+  ],
+  "certifications": [
+    "Google Professional Machine Learning Engineer",
+    "AWS Certified Machine Learning – Specialty"
+  ],
+  "employment_gaps": [],
+  "years_of_experience": 5.2,
+  "raw_text": "Priya Mehta\nMumbai, India | priya.mehta@outlook.com | +91 87654 32100\n\nPROFESSIONAL SUMMARY\nSenior Data Scientist with 5+ years of experience in machine learning, recommendation systems, and NLP. Proven track record of deploying ML models at scale serving millions of users.\n\nEDUCATION\nIndian Institute of Technology Bombay — M.Tech in Data Science and AI (2020)\nUniversity of Pune — B.E. in Information Technology (2018)\n\nWORK EXPERIENCE\n\nFlipkart — Senior Data Scientist\n2023-06 – Present | Mumbai\n- Leading ML-powered product recommendation engine serving 200M+ monthly active users.\n- Designed real-time pricing optimization model reducing markdowns by 18%.\n- Mentoring a team of 4 junior data scientists on MLOps best practices.\n\nZomato — Data Scientist\n2020-09 – 2023-05 | Gurugram\n- Built demand forecasting models using LightGBM achieving 92% accuracy on 7-day predictions.\n- Implemented A/B testing framework used across 15+ product experiments per quarter.\n- Developed NLP pipeline for restaurant review sentiment classification using BERT.\n\nTCS Research — Research Intern\n2019-05 – 2020-07 | Mumbai\n- Published paper on federated learning for privacy-preserving healthcare data at IEEE conference.\n- Built end-to-end ML pipeline for anomaly detection in network traffic data.\n\nTECHNICAL SKILLS\nProgramming: Python, R, SQL, Scala\nML Frameworks: PyTorch, TensorFlow, Scikit-learn, Hugging Face\nData Tools: Spark, Airflow, dbt, Tableau\nCloud: AWS SageMaker, GCP Vertex AI, MLflow\n\nCERTIFICATIONS\n- Google Professional Machine Learning Engineer\n- AWS Certified Machine Learning – Specialty"
+}
