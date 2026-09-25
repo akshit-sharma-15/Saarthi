@@ -5,7 +5,7 @@ import { useCandidate } from '../context/CandidateContext';
 
 export default function ProfilePage() {
   const navigate = useNavigate();
-  const { candidate } = useCandidate();
+  const { candidate, candidateId } = useCandidate();
 
   // Empty state — no hardcoded fallback data
   if (!candidate) {
@@ -51,9 +51,20 @@ export default function ProfilePage() {
               {(cInfo?.name || 'C')[0]}
             </div>
             <div>
-              <h2 className="text-xl font-semibold text-ink-900 tracking-tight">
-                {cInfo?.name || "Candidate Profile"}
-              </h2>
+              <div className="flex flex-wrap items-center gap-2">
+                <h2 className="text-xl font-semibold text-ink-900 tracking-tight">
+                  {cInfo?.name || "Candidate Profile"}
+                </h2>
+                <span className="text-[10px] px-2 py-0.5 rounded-md font-medium bg-emerald-50 text-emerald-700 border border-emerald-100 flex items-center gap-1">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                  Active Resume
+                </span>
+                {candidateId && (
+                  <span className="text-[10px] text-ink-400 font-mono bg-surface-100 px-1.5 py-0.5 rounded border border-surface-200">
+                    ID: {candidateId}
+                  </span>
+                )}
+              </div>
               <p className="text-[13px] text-ink-500 mt-0.5">
                 {experience[0]?.title || ""}
                 {experience[0]?.company ? ` at ${experience[0].company}` : ''}
