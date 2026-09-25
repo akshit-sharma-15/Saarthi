@@ -59,18 +59,13 @@ def parse_node(state: Dict[str, Any]) -> Dict[str, Any]:
             raw_text=raw_text
         )
         raw_output = llm_provider.call_llm(SYSTEM_PROMPT, prompt, json_mode=True)
+        from backend.app.parsing.normalizer import normalize_profile_data
         try:
             profile_data = json.loads(clean_json_string(raw_output))
-            profile_data["raw_text"] = raw_text
-            profile = CandidateProfile.model_validate(profile_data)
-        except Exception as e:
-            logger.warning(f"Error parsing profile from LLM output: {e}. Fallback minimal profile.")
-            # Graceful fallback: extract what we can
-            profile = CandidateProfile(
-                candidate=Candidate(name="Candidate"),
-                years_of_experience=0.0,
-                raw_text=raw_text
-            )
+        except Exception:
+            profile_data = {}
+        normalized = normalize_profile_data(profile_data, raw_text=raw_text)
+        profile = CandidateProfile.model_validate(normalized)
 
     detail = f"Extracted candidate '{profile.candidate.name}' with {len(profile.experience)} work roles and {len(profile.education)} education items."
     log_agent_run(resume_id, "parse", "ok", detail)

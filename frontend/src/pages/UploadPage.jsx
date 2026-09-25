@@ -25,6 +25,9 @@ export default function UploadPage() {
       setError(err.response?.data?.detail || 'Failed to upload and parse resume. Please ensure file is a valid PDF or JSON.');
     } finally {
       setLoading(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
     }
   };
 
@@ -92,7 +95,7 @@ export default function UploadPage() {
             type="file"
             ref={fileInputRef}
             onChange={(e) => e.target.files?.[0] && handleFileUpload(e.target.files[0])}
-            accept=".pdf,.json"
+            accept=".pdf,.json,.txt"
             className="hidden"
           />
 
@@ -116,12 +119,13 @@ export default function UploadPage() {
             {loading ? 'Extracting facts & computing experience gaps...' : 'Click to browse or drag & drop your resume'}
           </h3>
           <p className="text-[12px] text-ink-400 mt-1.5">
-            Supports PDF (PyMuPDF extraction) and JSON format — Max 10MB
+            Supports PDF, JSON, and Text formats — Max 10MB
           </p>
 
           <div className="flex items-center justify-center gap-2 mt-4">
             <span className="badge-neutral"><FileText size={10} /> .pdf</span>
             <span className="badge-neutral"><FileText size={10} /> .json</span>
+            <span className="badge-neutral"><FileText size={10} /> .txt</span>
           </div>
         </div>
       </div>

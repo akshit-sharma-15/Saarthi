@@ -9,16 +9,30 @@ export function CandidateProvider({ children }) {
   const [candidatesList, setCandidatesList] = useState([]);
   const [loading, setLoading] = useState(false);
 
-  // Load existing candidates on mount
+  // Refresh candidate list helper
+  const refreshCandidates = async () => {
+    try {
+      const list = await fetchCandidates();
+      setCandidatesList(list);
+      return list;
+    } catch (err) {
+      console.error('Failed to refresh candidates:', err);
+      return [];
+    }
+  };
+
+  // Load candidates on mount, restoring saved candidate if available
   useEffect(() => {
     async function init() {
       try {
         const list = await fetchCandidates();
         setCandidatesList(list);
-        if (list.length > 0 && !candidateId) {
-          const first = list[0];
-          setCandidateId(first.id);
-          const prof = await fetchCandidateProfile(first.id);
+        if (list.length > 0) {
+          const savedId = localStorage.getItem('active_candidate_id');
+          const target = (savedId && list.find(c => c.id === savedId)) || list[0];
+          setCandidateId(target.id);
+          localStorage.setItem('active_candidate_id', target.id);
+          const prof = await fetchCandidateProfile(target.id);
           setCandidate(prof);
         }
       } catch (err) {
@@ -29,13 +43,15 @@ export function CandidateProvider({ children }) {
   }, []);
 
   const selectCandidate = async (id) => {
+    if (!id) return;
     setLoading(true);
     try {
       setCandidateId(id);
+      localStorage.setItem('active_candidate_id', id);
       const prof = await fetchCandidateProfile(id);
       setCandidate(prof);
     } catch (err) {
-      console.error(err);
+      console.error('Error selecting candidate:', err);
     } finally {
       setLoading(false);
     }
@@ -44,8 +60,9 @@ export function CandidateProvider({ children }) {
   const setCandidateData = (id, profileData) => {
     setCandidateId(id);
     setCandidate(profileData);
-    // Refresh candidate list
-    fetchCandidates().then(setCandidatesList).catch(() => {});
+    localStorage.setItem('active_candidate_id', id);
+    // Refresh list so newly uploaded resume is immediately in the switcher
+    refreshCandidates();
   };
 
   return (
@@ -57,6 +74,7 @@ export function CandidateProvider({ children }) {
         loading,
         selectCandidate,
         setCandidateData,
+        refreshCandidates,
       }}
     >
       {children}
