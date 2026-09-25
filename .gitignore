@@ -45,6 +45,7 @@ backend/app/storage/evaluations/*
 !backend/app/storage/evaluations/.gitkeep
 backend/app/storage/uploads/*
 !backend/app/storage/uploads/.gitkeep
+backend/storage/*
 
 # Node & Frontend dependencies & build output
 node_modules/

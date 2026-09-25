@@ -206,7 +206,14 @@ async def download_evaluation_pdf(
             headers={"Content-Disposition": f"inline; filename={pdf_filename}"}
         )
 
-    raise HTTPException(status_code=404, detail="Evaluation PDF not found")
+@router.get("/dispatch/config")
+async def get_dispatch_config():
+    """Returns dispatch configuration such as HR recipient email and mock status."""
+    config = mailer.get_config()
+    return {
+        "hr_email": config.get("hr_email", "asharma889452@gmail.com"),
+        "mock_mode": config.get("mock_mode", False),
+    }
 
 @router.post("/dispatch/email")
 async def dispatch_email_manual(
@@ -232,7 +239,7 @@ async def dispatch_email_manual(
         cand_name = eval_data.get("candidate_name", "Candidate")
         notes = eval_data.get("evaluation_notes", "")
         pdf_path = eval_rec.pdf_path
-        if not pdf_path or not os.path.exists(pdf_path):
+        if not pdf_path or not os.path.exists(pdf_path) or os.path.getsize(pdf_path) == 0:
             evaluation = Evaluation.model_validate(eval_data)
             pdf_path = os.path.join(storage_dir, f"evaluation_{eval_rec.candidate_id}.pdf")
             generate_evaluation_pdf(evaluation, pdf_path)
@@ -247,7 +254,7 @@ async def dispatch_email_manual(
         cand_name = profile.candidate.name
         notes = f"Verified facts for {cand_name} ({profile.years_of_experience:.1f} years experience)."
         pdf_path = os.path.join(storage_dir, f"evaluation_{cand.id}.pdf")
-        if not os.path.exists(pdf_path):
+        if not os.path.exists(pdf_path) or os.path.getsize(pdf_path) == 0:
             evaluation = Evaluation(
                 candidate_name=profile.candidate.name,
                 email=profile.candidate.email,
@@ -261,7 +268,8 @@ async def dispatch_email_manual(
             )
             generate_evaluation_pdf(evaluation, pdf_path, profile=profile)
 
-    res = mailer.dispatch_evaluation(
+    res = await asyncio.to_thread(
+        mailer.dispatch_evaluation,
         candidate_name=cand_name,
         pdf_path=pdf_path,
         evaluation_summary=notes,
