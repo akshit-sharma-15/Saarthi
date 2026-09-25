@@ -43,6 +43,8 @@ async def upload_resume(
     raw_text = ""
     profile: Optional[CandidateProfile] = None
 
+    from backend.app.parsing.normalizer import normalize_profile_data
+
     if file_ext == ".json":
         try:
             with open(saved_path, "r", encoding="utf-8") as f:
@@ -51,7 +53,8 @@ async def upload_resume(
             if not raw_text:
                 raw_text = json.dumps(data, indent=2)
             data["raw_text"] = raw_text
-            profile = CandidateProfile.model_validate(data)
+            normalized = normalize_profile_data(data, raw_text=raw_text, filename=filename)
+            profile = CandidateProfile.model_validate(normalized)
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Invalid JSON resume format: {str(e)}")
     elif file_ext == ".pdf":
@@ -69,7 +72,7 @@ async def upload_resume(
         except Exception as e:
             raise HTTPException(status_code=400, detail=f"Unsupported file type: {str(e)}")
 
-    # If profile not yet built (e.g. from PDF), parse using structured LLM call
+    # If profile not yet built (e.g. from PDF or TXT), parse using structured LLM call
     if not profile:
         prompt = PARSE_RESUME_PROMPT.format(
             schema=json.dumps(CandidateProfile.model_json_schema(), indent=2),
@@ -78,14 +81,10 @@ async def upload_resume(
         llm_resp = llm_provider.call_llm(SYSTEM_PROMPT, prompt, json_mode=True)
         try:
             p_data = json.loads(clean_json_string(llm_resp))
-            p_data["raw_text"] = raw_text
-            profile = CandidateProfile.model_validate(p_data)
         except Exception:
-            profile = CandidateProfile(
-                candidate=Candidate(name=os.path.splitext(filename)[0].replace("_", " ").title()),
-                years_of_experience=0.0,
-                raw_text=raw_text
-            )
+            p_data = {}
+        normalized = normalize_profile_data(p_data, raw_text=raw_text, filename=filename)
+        profile = CandidateProfile.model_validate(normalized)
 
     # CRITICAL: Always run deterministic Python fact computation (never trust LLM for dates/gaps)
     years_exp = calculate_years_of_experience(profile.experience)
