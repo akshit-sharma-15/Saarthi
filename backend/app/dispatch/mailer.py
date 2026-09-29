@@ -1,4 +1,6 @@
 import os
+import socket
+import ssl
 import smtplib
 import logging
 from email.mime.multipart import MIMEMultipart
@@ -20,6 +22,45 @@ def get_ist_now() -> datetime:
 def get_ist_str() -> str:
     """Returns formatted timestamp string in IST."""
     return get_ist_now().strftime("%Y-%m-%d %I:%M:%S %p IST")
+
+def create_ipv4_connection(address, timeout=12, source_address=None):
+    """
+    Connects to a host strictly using IPv4 (AF_INET).
+    Prevents '[Errno 101] Network is unreachable' errors on cloud hosting (Render, Docker, Linux)
+    where DNS returns IPv6 addresses but no IPv6 route exists.
+    """
+    host, port = address
+    err = None
+    for res in socket.getaddrinfo(host, port, socket.AF_INET, socket.SOCK_STREAM):
+        af, socktype, proto, canonname, sa = res
+        sock = None
+        try:
+            sock = socket.socket(af, socktype, proto)
+            if timeout is not None:
+                sock.settimeout(timeout)
+            if source_address:
+                sock.bind(source_address)
+            sock.connect(sa)
+            return sock
+        except OSError as _err:
+            err = _err
+            if sock is not None:
+                sock.close()
+    if err is not None:
+        raise err
+    raise OSError(f"Could not resolve IPv4 address for {host}")
+
+class IPv4SMTP(smtplib.SMTP):
+    """SMTP client strictly enforcing IPv4 connection."""
+    def _get_socket(self, host, port, timeout):
+        return create_ipv4_connection((host, port), timeout, self.source_address)
+
+class IPv4SMTP_SSL(smtplib.SMTP_SSL):
+    """SMTP_SSL client strictly enforcing IPv4 connection."""
+    def _get_socket(self, host, port, timeout):
+        new_socket = create_ipv4_connection((host, port), timeout, self.source_address)
+        new_socket = self.context.wrap_socket(new_socket, server_hostname=self._host)
+        return new_socket
 
 def reload_env_variables():
     """Finds and loads .env from multiple possible root or backend locations."""
@@ -45,7 +86,7 @@ class Mailer:
         mock_str = os.getenv("MOCK_SMTP", "false").strip().lower()
         mock_mode = mock_str in ["true", "1", "yes"]
         smtp_server = os.getenv("SMTP_SERVER", "smtp.gmail.com").strip()
-        smtp_port = int(os.getenv("SMTP_PORT", "465"))
+        smtp_port = int(os.getenv("SMTP_PORT", "587"))
         smtp_username = os.getenv("SMTP_USERNAME", "").strip()
         smtp_password = os.getenv("SMTP_PASSWORD", "").strip()
         hr_email = os.getenv("HR_EMAIL", "asharma889452@gmail.com").strip()
@@ -123,42 +164,36 @@ class Mailer:
             delivered = False
             last_err = None
 
-            # Determine primary port: Gmail works reliably and instantly via 465 (direct SSL)
-            is_gmail = "gmail.com" in cfg["smtp_server"].lower()
-            configured_port = cfg.get("smtp_port", 465)
+            # Determine port sequence: Port 587 (STARTTLS) is recommended for cloud/Render deployments
+            configured_port = int(cfg.get("smtp_port") or 587)
             server_host = cfg["smtp_server"]
 
-            if is_gmail or configured_port == 465:
-                primary_port = 465
-                alt_port = 587
+            if configured_port == 465:
+                port_sequence = [(465, True), (587, False)]
             else:
-                primary_port = configured_port
-                alt_port = 465 if configured_port != 465 else 587
+                port_sequence = [(587, False), (465, True)]
 
-            def try_send(port, use_ssl=False):
-                if use_ssl or port == 465:
-                    import ssl
-                    ctx = ssl.create_default_context()
-                    with smtplib.SMTP_SSL(server_host, port, context=ctx, timeout=8) as s:
-                        s.login(cfg["smtp_username"], cfg["smtp_password"])
-                        s.send_message(msg)
-                else:
-                    with smtplib.SMTP(server_host, port, timeout=8) as s:
-                        s.starttls()
-                        s.login(cfg["smtp_username"], cfg["smtp_password"])
-                        s.send_message(msg)
-
-            try:
-                try_send(primary_port, use_ssl=(primary_port == 465))
-                delivered = True
-            except Exception as primary_err:
-                last_err = primary_err
-                logger.warning(f"SMTP delivery failed on primary port {primary_port}: {primary_err}. Attempting alternative port {alt_port}...")
-                try:
-                    try_send(alt_port, use_ssl=(alt_port == 465))
-                    delivered = True
-                except Exception as alt_err:
-                    last_err = alt_err
+            for port, use_ssl in port_sequence:
+                for attempt in range(2):
+                    try:
+                        logger.info(f"Attempting SMTP delivery to {to_email} via {server_host}:{port} (SSL={use_ssl}, attempt {attempt+1}/2)...")
+                        if use_ssl:
+                            ctx = ssl.create_default_context()
+                            with IPv4SMTP_SSL(server_host, port, context=ctx, timeout=12) as s:
+                                s.login(cfg["smtp_username"], cfg["smtp_password"])
+                                s.send_message(msg)
+                        else:
+                            with IPv4SMTP(server_host, port, timeout=12) as s:
+                                s.starttls()
+                                s.login(cfg["smtp_username"], cfg["smtp_password"])
+                                s.send_message(msg)
+                        delivered = True
+                        break
+                    except Exception as conn_err:
+                        last_err = conn_err
+                        logger.warning(f"SMTP attempt {attempt+1}/2 on port {port} failed: {conn_err}")
+                if delivered:
+                    break
 
             if not delivered:
                 raise last_err or Exception("Failed to deliver email through all configured SMTP ports")

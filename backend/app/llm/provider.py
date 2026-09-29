@@ -65,8 +65,9 @@ class LLMProvider:
             models_to_try = [
                 os.getenv("GROQ_MODEL", "openai/gpt-oss-20b"),
                 "openai/gpt-oss-20b",
-                "qwen/qwen3.8-27b",
                 "openai/gpt-oss-120b",
+                "qwen/qwen3.8-27b",
+                "llama-3.3-70b-versatile",
                 "llama-3.1-8b-instant"
             ]
             # Deduplicate while preserving order
@@ -86,16 +87,38 @@ class LLMProvider:
                             {"role": "user", "content": user_prompt}
                         ],
                         "temperature": 0.1,
-                        "timeout": 20
+                        "timeout": 25,
+                        "max_tokens": 4096
                     }
                     if json_mode:
                         kwargs["response_format"] = {"type": "json_object"}
                     resp = client.chat.completions.create(**kwargs)
-                    return clean_json_string(resp.choices[0].message.content)
+                    content = resp.choices[0].message.content
+                    if content and content.strip():
+                        return clean_json_string(content)
                 except Exception as model_err:
-                    if "model_not_found" in str(model_err) or "404" in str(model_err):
-                        continue
-                    raise model_err
+                    err_str = str(model_err)
+                    logger.warning(f"Groq model {model_name} failed: {err_str}")
+                    # If json validation failed, retry this model without json_mode and extract JSON manually
+                    if json_mode and ("json_validate_failed" in err_str or "failed to generate json" in err_str.lower()):
+                        try:
+                            retry_kwargs = {
+                                "model": model_name,
+                                "messages": [
+                                    {"role": "system", "content": system_prompt + "\n\nCRITICAL: You MUST respond ONLY with valid JSON. Do not include preamble or explanations."},
+                                    {"role": "user", "content": user_prompt}
+                                ],
+                                "temperature": 0.1,
+                                "timeout": 25,
+                                "max_tokens": 4096
+                            }
+                            resp = client.chat.completions.create(**retry_kwargs)
+                            content = resp.choices[0].message.content
+                            if content and content.strip():
+                                return clean_json_string(content)
+                        except Exception as retry_err:
+                            logger.warning(f"Groq model {model_name} non-json-mode retry also failed: {retry_err}")
+                    continue
             return None
         except Exception as e:
             logger.warning(f"Groq API call failed: {e}")

@@ -1,7 +1,10 @@
 import os
 import html
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from reportlab.lib.pagesizes import letter
+
+# Indian Standard Time (IST, UTC+05:30)
+IST = timezone(timedelta(hours=5, minutes=30))
 from reportlab.lib import colors
 from reportlab.lib.units import inch
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
@@ -116,7 +119,7 @@ def generate_evaluation_pdf(
     header_data = [
         [
             Paragraph("<b>AI RECRUITER COPILOT</b><br/><font size='9' color='#64748B'>EVIDENCE-DRIVEN CANDIDATE EVALUATION ARTIFACT</font>", title_style),
-            Paragraph(f"<b>Report Generated:</b> {datetime.now().strftime('%Y-%m-%d %H:%M')}<br/><b>Verification:</b> Evidence Grounded", subtitle_style)
+            Paragraph(f"<b>Report Generated:</b> {datetime.now(IST).strftime('%Y-%m-%d %I:%M %p IST')}<br/><b>Verification:</b> Evidence Grounded", subtitle_style)
         ]
     ]
     header_table = Table(header_data, colWidths=[340, 190])
